@@ -51,35 +51,31 @@ class DemoItem extends StatelessWidget {
   }
 }
 
-
-
 final List<Widget> imageSliders = imgList
     .map((item) => Container(
-  child: Container(
-    child: ClipRRect(
-        borderRadius: BorderRadius.all(Radius.circular(5.0)),
-        child: Stack(
-          children: <Widget>[
-            Image.network(item, fit: BoxFit.cover, width: 1000.0),
-          ],
-        )),
-  ),
-))
+          child: Container(
+            child: ClipRRect(
+                borderRadius: BorderRadius.all(Radius.circular(5.0)),
+                child: Stack(
+                  children: <Widget>[
+                    Image.network(item, fit: BoxFit.cover, width: 1000.0),
+                  ],
+                )),
+          ),
+        ))
     .toList();
 
 class ComplicatedImageDemo extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Container(
-        child: CarouselSlider(
-          options: CarouselOptions(
-            autoPlay: false,
-            aspectRatio: 2.0,
-            enlargeCenterPage: true,
-          ),
-          items: imageSliders,
+    return Container(
+      child: CarouselSlider(
+        options: CarouselOptions(
+          autoPlay: false,
+          aspectRatio: 2.0,
+          enlargeCenterPage: true,
         ),
+        items: imageSliders,
       ),
     );
   }
