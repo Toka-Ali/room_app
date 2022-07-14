@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:room_app/splash.dart';
 
 import 'inside_app/Screens/home_screen.dart';
-import 'inside_app/widgets/Slider.dart';
 
 void main() {
   runApp(const MyApp());
@@ -15,10 +14,10 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      routes: {'home' : (context)=> HomeScreen(),
-      'splash' : (context)=> Splash(),
-      'slider': (context)=> ComplicatedImageDemo()},
-
+      routes: {
+        'home': (context) => const HomeScreen(),
+        'splash': (context) => const Splash(),
+      },
       initialRoute: 'splash',
     );
   }

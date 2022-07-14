@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:room_app/model/api_manager.dart';
 
 class OutfitScreen extends StatefulWidget {
   const OutfitScreen({Key? key}) : super(key: key);
@@ -18,8 +17,7 @@ class _OutfitScreenState extends State<OutfitScreen> {
             borderRadius: BorderRadius.only(
                 bottomLeft: Radius.circular(40),
                 bottomRight: Radius.circular(40))),
-        title: Container(
-            child: const Text('Fitting Room')),
+        title: Container(child: const Text('Fitting Room')),
       ),
     );
   }

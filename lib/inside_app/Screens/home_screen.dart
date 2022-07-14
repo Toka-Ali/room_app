@@ -1,13 +1,13 @@
 import 'dart:convert';
-import 'dart:developer';
+import 'dart:io';
 import 'dart:typed_data';
 
-import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:room_app/api_manger.dart';
+
 import 'package:room_app/inside_app/Screens/select_image.dart';
-import 'package:room_app/inside_app/widgets/Slider.dart';
+import 'package:room_app/inside_app/widgets/slider.dart';
 import 'package:room_app/inside_app/widgets/sources_bar.dart';
-import 'dart:io';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -18,50 +18,26 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   File? personImage;
-  File? clothingImage;
+  String? clothingImageUrl;
   Uint8List? outfitImage;
   bool loading = false;
+  bool isWomen = true;
 
-  Future<void> _uploadImage(File personImage, File clothingImage) async {
-    String clothingImageApi = clothingImage.path.split('/').last;
-    String personImageApi = personImage.path.split('/').last;
+  Future<void> _uploadImage(File personImage, String clothingImageUrl) async {
     setState(() {
       loading = true;
     });
-    FormData data = FormData.fromMap({
-      "clothing_image": await MultipartFile.fromFile(
-        clothingImage.path,
-        filename: clothingImageApi,
-      ),
-      "person_image": await MultipartFile.fromFile(
-        personImage.path,
-        filename: personImageApi,
-      ),
-    });
-
-    Dio dio = Dio();
-    String url = "http://f362-35-193-112-76.ngrok.io";
-    await dio
-        .post(
-      url + "/apply",
-      data: data,
-    )
-        .then((response) async {
-      var data = response.data as Map<String, dynamic>;
-      log(data["result"]);
-      var _imgString = data["result"];
-
-      Uint8List bytes = const Base64Decoder().convert(_imgString);
+    File clothingImage = await ApiManger.urlToFile(clothingImageUrl);
+    await ApiManger.uploadImageApi(personImage, clothingImage,
+        (Uint8List bytes) {
       setState(() {
         loading = false;
         outfitImage = bytes;
       });
-
-// You can check if data is normal base64 - should return true
-
-// Will returns your image as Uint8List
-    }).catchError((error) {
-      print(error);
+    }, () {
+      setState(() {
+        loading = false;
+      });
     });
   }
 
@@ -101,14 +77,11 @@ class _HomeScreenState extends State<HomeScreen> {
         child: Column(
           children: [
             const SourcesBar(),
-            ComplicatedImageDemo(),
-            SelectImage(
-              tittle: "Pick Clothing Image from Gallery",
-              fromGallery: true,
-              afterSelectImage: (File pic) {
-                clothingImage = pic;
-              },
-            ),
+            SliderImage(
+                list: isWomen ? imgListWomen : imgListMen,
+                selectedImage: (url) {
+                  clothingImageUrl = url;
+                }),
             SelectImage(
               tittle: "Pick Person Image from Gallery",
               fromGallery: true,
@@ -126,8 +99,8 @@ class _HomeScreenState extends State<HomeScreen> {
                 clipBehavior: Clip.antiAlias,
                 child: MaterialButton(
                   onPressed: () async {
-                    if (personImage != null && clothingImage != null) {
-                      await _uploadImage(personImage!, clothingImage!);
+                    if (personImage != null && clothingImageUrl != null) {
+                      await _uploadImage(personImage!, clothingImageUrl!);
                     } else {
                       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
                         duration: Duration(seconds: 2),
@@ -163,3 +136,16 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 }
+
+final List<String> imgListWomen = [
+  "https://lcw.akinoncdn.com/products/2021/10/07/1556086/1d86bfc3-a56d-48a1-9f98-645ed6e59f18_size561x730.jpg",
+  "https://lcw.akinoncdn.com/products/2022/04/12/3325949/68ad3bce-cae8-47d2-ba66-3a79ad7b6bce_size561x730.jpg",
+  "https://lcw.akinoncdn.com/products/2022/04/08/3318191/f61c9d35-6685-47ca-baf1-b3649da4279f_size561x730.jpg",
+  "https://lcw.akinoncdn.com/products/2022/04/01/3303016/665f29db-b5f6-4e60-b07d-c12c62fa7af2_size561x730.jpg",
+];
+final List<String> imgListMen = [
+  "https://lcw.akinoncdn.com/products/2021/10/07/1556086/1d86bfc3-a56d-48a1-9f98-645ed6e59f18_size561x730.jpg",
+  "https://lcw.akinoncdn.com/products/2022/04/12/3325949/68ad3bce-cae8-47d2-ba66-3a79ad7b6bce_size561x730.jpg",
+  "https://lcw.akinoncdn.com/products/2022/04/08/3318191/f61c9d35-6685-47ca-baf1-b3649da4279f_size561x730.jpg",
+  "https://lcw.akinoncdn.com/products/2022/04/01/3303016/665f29db-b5f6-4e60-b07d-c12c62fa7af2_size561x730.jpg",
+];
