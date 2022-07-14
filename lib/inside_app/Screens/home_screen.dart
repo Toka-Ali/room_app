@@ -9,6 +9,7 @@ import 'package:room_app/inside_app/widgets/Slider.dart';
 import 'package:room_app/inside_app/widgets/sources_bar.dart';
 import 'dart:io';
 
+
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
 
@@ -19,21 +20,19 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   File? personImage;
   File? clothingImage;
-  Uint8List? outfitImage;
-  bool loading = false;
+  File? outfitImage;
 
+  void onButtonPressed(File pickedImage) async {}
   Future<void> _uploadImage(File personImage, File clothingImage) async {
     String clothingImageApi = clothingImage.path.split('/').last;
     String personImageApi = personImage.path.split('/').last;
-    setState(() {
-      loading = true;
-    });
+
     FormData data = FormData.fromMap({
-      "clothing_image": await MultipartFile.fromFile(
+      "person_image": await MultipartFile.fromFile(
         clothingImage.path,
         filename: clothingImageApi,
       ),
-      "person_image": await MultipartFile.fromFile(
+      "clothing_image": await MultipartFile.fromFile(
         personImage.path,
         filename: personImageApi,
       ),
@@ -41,25 +40,19 @@ class _HomeScreenState extends State<HomeScreen> {
 
     Dio dio = Dio();
     String url = "http://f362-35-193-112-76.ngrok.io";
-    await dio
-        .post(
-      url + "/apply",
-      data: data,
-    )
-        .then((response) async {
-      var data = response.data as Map<String, dynamic>;
-      log(data["result"]);
-      var _imgString = data["result"];
-
-      Uint8List bytes = const Base64Decoder().convert(_imgString);
+    await dio.post(url + "/apply", data: data).then((response) async {
+      log(response.data);
+      String image = response.data;
+      // final decodedBytes = base64Decode(image);
+      // var file = Io.File("decodedBezkoder.png");
+      // file.writeAsBytesSync(decodedBytes);
+      image = image.substring(5);
+      Uint8List decodedbytes = base64.decode(image);
+      File decodedimgfile = await File("image.jpg").writeAsBytes(decodedbytes);
+      String decodedpath = decodedimgfile.path;
       setState(() {
-        loading = false;
-        outfitImage = bytes;
+        outfitImage = decodedimgfile;
       });
-
-// You can check if data is normal base64 - should return true
-
-// Will returns your image as Uint8List
     }).catchError((error) {
       print(error);
     });
@@ -72,7 +65,6 @@ class _HomeScreenState extends State<HomeScreen> {
   String base64String(Uint8List data) {
     return base64Encode(data);
   }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -102,20 +94,21 @@ class _HomeScreenState extends State<HomeScreen> {
           children: [
             const SourcesBar(),
             ComplicatedImageDemo(),
+            // SelectImage(
+            //    tittle: "Pick Clothing Image from Gallery",
+            //    fromGallery: true,
+            //    afterSelectImage: (File pic) {
+            //      clothingImage = pic;
+            //    },
+            //  ),
+            //
             SelectImage(
-              tittle: "Pick Clothing Image from Gallery",
-              fromGallery: true,
-              afterSelectImage: (File pic) {
-                clothingImage = pic;
-              },
-            ),
-            SelectImage(
-              tittle: "Pick Person Image from Gallery",
-              fromGallery: true,
-              afterSelectImage: (File pic) {
-                personImage = pic;
-              },
-            ),
+               tittle: "Pick Person Image from Gallery",
+               fromGallery: true,
+               afterSelectImage: (File pic) {
+                 personImage = pic;
+               },
+             ),
             Container(
               margin: const EdgeInsets.only(bottom: 60),
               child: Material(
@@ -147,14 +140,12 @@ class _HomeScreenState extends State<HomeScreen> {
               width: 200,
               child: Padding(
                 padding: const EdgeInsets.all(8.0),
-                child: loading
-                    ? const Center(child: CircularProgressIndicator())
-                    : outfitImage != null
-                        ? Image.memory(
-                            outfitImage!,
-                            fit: BoxFit.fill,
-                          )
-                        : const Text("Image Not Loaded Yet"),
+                child: outfitImage != null
+                    ? Image.file(
+                        outfitImage!,
+                        fit: BoxFit.fill,
+                      )
+                    : Center(child: const Text("Image Not Loaded Yet")),
               ),
             ),
           ],

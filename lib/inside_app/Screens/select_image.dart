@@ -77,7 +77,7 @@ class _SelectImageState extends State<SelectImage> {
                     selectedImage!,
                     fit: BoxFit.fill,
                   )
-                : const Text("No image selected"),
+                : Center(child: const Text("No image selected")),
           ),
         ),
         const Padding(padding: EdgeInsets.all(8))
