@@ -7,7 +7,6 @@ import 'package:flutter/material.dart';
 import 'package:room_app/inside_app/Screens/select_image.dart';
 import 'package:room_app/inside_app/widgets/Slider.dart';
 import 'package:room_app/inside_app/widgets/sources_bar.dart';
-import 'dart:io' as Io;
 import 'dart:io';
 
 class HomeScreen extends StatefulWidget {
@@ -20,39 +19,47 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   File? personImage;
   File? clothingImage;
-  File? outfitImage;
+  Uint8List? outfitImage;
+  bool loading = false;
 
-  void onButtonPressed(File pickedImage) async {}
   Future<void> _uploadImage(File personImage, File clothingImage) async {
     String clothingImageApi = clothingImage.path.split('/').last;
     String personImageApi = personImage.path.split('/').last;
-
+    setState(() {
+      loading = true;
+    });
     FormData data = FormData.fromMap({
-      "person_image": await MultipartFile.fromFile(
+      "clothing_image": await MultipartFile.fromFile(
         clothingImage.path,
         filename: clothingImageApi,
       ),
-      "clothing_image": await MultipartFile.fromFile(
+      "person_image": await MultipartFile.fromFile(
         personImage.path,
         filename: personImageApi,
       ),
     });
 
     Dio dio = Dio();
-    String url = "http://e15c-34-105-54-135.ngrok.io";
-    await dio.post(url + "/apply", data: data).then((response) async {
-      log(response.data);
-      String image = response.data;
-      // final decodedBytes = base64Decode(image);
-      // var file = Io.File("decodedBezkoder.png");
-      // file.writeAsBytesSync(decodedBytes);
-      image = image.substring(5);
-      Uint8List decodedbytes = base64.decode(image);
-      File decodedimgfile = await File("image.jpg").writeAsBytes(decodedbytes);
-      String decodedpath = decodedimgfile.path;
+    String url = "http://f362-35-193-112-76.ngrok.io";
+    await dio
+        .post(
+      url + "/apply",
+      data: data,
+    )
+        .then((response) async {
+      var data = response.data as Map<String, dynamic>;
+      log(data["result"]);
+      var _imgString = data["result"];
+
+      Uint8List bytes = const Base64Decoder().convert(_imgString);
       setState(() {
-        outfitImage = decodedimgfile;
+        loading = false;
+        outfitImage = bytes;
       });
+
+// You can check if data is normal base64 - should return true
+
+// Will returns your image as Uint8List
     }).catchError((error) {
       print(error);
     });
@@ -140,12 +147,14 @@ class _HomeScreenState extends State<HomeScreen> {
               width: 200,
               child: Padding(
                 padding: const EdgeInsets.all(8.0),
-                child: outfitImage != null
-                    ? Image.file(
-                        outfitImage!,
-                        fit: BoxFit.fill,
-                      )
-                    : const Text("Image Not Loaded Yet"),
+                child: loading
+                    ? const Center(child: CircularProgressIndicator())
+                    : outfitImage != null
+                        ? Image.memory(
+                            outfitImage!,
+                            fit: BoxFit.fill,
+                          )
+                        : const Text("Image Not Loaded Yet"),
               ),
             ),
           ],

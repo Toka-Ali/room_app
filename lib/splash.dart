@@ -10,26 +10,29 @@ class Splash extends StatefulWidget {
 
 class _SplashState extends State<Splash> {
   @override
-  void initState(){
+  void initState() {
     super.initState();
-    Future.delayed(const Duration(seconds: 4), (){
-      Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context)=> HomeScreen()));
+    Future.delayed(const Duration(seconds: 1), () {
+      Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (context) => HomeScreen()));
     });
   }
+
   Widget build(BuildContext context) {
     return Scaffold(
-      body:Container(
-        color: Colors.white,
-        child: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Image.asset('assets/images/logo.png'),
-              CircularProgressIndicator(backgroundColor: Colors.white,),
-            ],
-          ),
+        body: Container(
+      color: Colors.white,
+      child: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Image.asset('assets/images/logo.png'),
+            CircularProgressIndicator(
+              backgroundColor: Colors.white,
+            ),
+          ],
         ),
-      )
-    );
+      ),
+    ));
   }
 }
